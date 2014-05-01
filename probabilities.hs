@@ -50,11 +50,23 @@ module Probabilities where
 	uniform :: (RandomGen r, Random a) => a -> a -> Distribution r a
 	uniform a b = Distribution $ fst . randomR (a, b)
 
+	uniformSpace :: (RandomGen r, Eq a) => [a] -> Distribution r a
+	uniformSpace space = choice (map (\x -> (x, p)) space)
+		where
+			p = 1 / (fromIntegral . length $ space)
+
 	bernoulli :: (RandomGen r, Eq a) => a -> a -> Float -> Distribution r a
 	bernoulli success failure p = fromPMF [success, failure] pmf
 		where
 			pmf x	| x == success	= p
 					| x == failure	= 1 - p
+
+	choice :: (RandomGen r, Eq a) => [(a, Float)] -> Distribution r a
+	choice dict = fromPMF (map fst dict) (lookup dict)
+		where
+			lookup [] x = undefined
+			lookup ((k, v):ds) x	| k == x	= v
+									| otherwise	= lookup ds x
 
 	geometric :: RandomGen r => Float -> Distribution r Int
 	geometric p = do
@@ -103,10 +115,8 @@ module Probabilities where
 	givenJoint :: RandomGen r => Distribution r (a, b) -> (b -> Bool) -> Distribution r a
 	givenJoint d p = given d (\(x, y) -> p y) >>= return . fst
 
-	-- sandbox
+	marginalA :: RandomGen r => Distribution r (a, b) -> Distribution r a
+	marginalA = fmap fst
 
-	dJoint :: RandomGen r => Distribution r (Float, Float)
-	dJoint = do
-		x <- uniform 0.0 1.0
-		y <- uniform 0.0 1.0
-		return (x, x + y)
+	marginalB :: RandomGen r => Distribution r (a, b) -> Distribution r b
+	marginalB = fmap snd
