@@ -99,6 +99,12 @@ module Probabilities where
 		where
 			d = uniform (a/2) (b/2)
 
+	normal :: (RandomGen r, Random a, Floating a) => a -> a -> Distribution r a
+	normal mu sigma = do
+		r1 <- uniform 0.0 1.0
+		r2 <- uniform 0.0 1.0
+		return $ mu + sigma * sqrt (-2 * log r1) * cos (2 * pi * r2) -- The Box-Muller algorithm for generating a normal random variable
+
 	convolve f d1 d2 = do
 		x <- d1
 		y <- d2
@@ -115,8 +121,40 @@ module Probabilities where
 	givenJoint :: RandomGen r => Distribution r (a, b) -> (b -> Bool) -> Distribution r a
 	givenJoint d p = given d (\(x, y) -> p y) >>= return . fst
 
+	condition :: RandomGen r => Distribution r (b -> a) -> Distribution r b -> Distribution r (a, b)
+	condition dab db = do
+		ab <- dab
+		b <- db
+		return $ (ab b, b)
+
 	marginalA :: RandomGen r => Distribution r (a, b) -> Distribution r a
 	marginalA = fmap fst
 
 	marginalB :: RandomGen r => Distribution r (a, b) -> Distribution r b
 	marginalB = fmap snd
+
+	estimate :: (RandomGen r, Fractional b) => Int -> (a -> b) -> Distribution r a -> Distribution r b
+	estimate 1 f d = d >>= return . f
+	estimate n f d = do
+		x <- d
+		e <- estimate (n - 1) f d
+		let e' = ((f x) + (fromIntegral $ n - 1) * e) / (fromIntegral n)
+		return e'
+
+	mean :: (RandomGen r, Fractional a) => Int -> Distribution r a -> Distribution r a
+	mean n = estimate n id
+
+	meanInt :: (RandomGen r, Fractional a) => Int -> Distribution r Int -> Distribution r a
+	meanInt n = estimate n fromIntegral
+
+	variance :: (RandomGen r, Fractional a) => Int -> Distribution r a -> Distribution r a
+	variance n d = do
+		e2 <- estimate n (^2) d
+		e <- estimate n id d
+		return $ e2 - (e^2)
+
+	varianceInt :: (RandomGen r, Fractional a) => Int -> Distribution r Int -> Distribution r a
+	varianceInt n d = do
+		e2 <- estimate n ((^2) . fromIntegral) d
+		e <- estimate n fromIntegral d
+		return $ e2 - (e^2)
