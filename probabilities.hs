@@ -141,6 +141,9 @@ module Probabilities where
 		let e' = ((f x) + (fromIntegral $ n - 1) * e) / (fromIntegral n)
 		return e'
 
+	probability :: (a -> Bool) -> (a -> Float) -- allows you to do nice things like: estimate 1000 (probability even $ binomial 10 0.4
+	probability p = \x -> if p x then 1.0 else 0.0
+
 	mean :: (RandomGen r, Fractional a) => Int -> Distribution r a -> Distribution r a
 	mean n = estimate n id
 
