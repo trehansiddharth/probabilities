@@ -7,8 +7,8 @@ module Chess where
 	import Data.List (lookup)
 
 	{--
-		Naive "random walk" distributions for knight and king: a single piece starts some place
-		on a chessboard and its position after n steps is followed.
+		Simple distributions for knight and king: a single piece starts some place
+		on a chessboard and its position after n steps is measured.
 	--}
 
 	-- Distribution over the position of a chess piece on an 8 by 8 chessboard with a list of valid moves "moves" after "n" moves given that it starts at "starting"
@@ -41,8 +41,6 @@ module Chess where
 	data PieceType = King | Queen | Knight | Bishop | Rook | Pawn { isFirstMove :: Bool }
 		deriving (Eq, Show)
 
-	pawnMoved (Piece (Pawn True) color number) = Piece (Pawn False) color number
-
 	data Piece = Piece { getType :: PieceType, getColor :: Color, getNumber :: Int }
 		deriving (Eq, Show)
 
@@ -53,27 +51,35 @@ module Chess where
 	data Move = Move { pieceOf :: Piece, getOldPosition :: (Int, Int), getNewPosition :: (Int, Int) }
 		deriving (Eq, Show)
 
+	randomChessWalk :: RandomGen r => Piece -> Int -> StateT ChessState (Distribution r) (Int, Int)
+	randomChessWalk p 0 = do
+		Just position <- gets (lookup p)
+		return position
+	randomChessWalk p n = do
+		movePieceRandomly p (\s m -> uniformSpace m)
+		randomChessWalk p (n - 1)
+
+	applyMove :: Move -> (ChessState -> ChessState)
 	applyMove move = case getType . pieceOf $ move of
 		Pawn True -> map (\(k, v) -> if k == (pieceOf move) then (pawnMoved k, getNewPosition move) else (k, v)) -- update pawn to indicate that it has been moved already
 		_ -> map (\(k, v) -> if k == (pieceOf move) then (k, getNewPosition move) else (k, v))
+		where
+			pawnMoved (Piece (Pawn True) color number) = Piece (Pawn False) color number
 
 	movePieceRandomly :: RandomGen r => Piece -> (ChessState -> [Move] -> Distribution r Move) -> StateT ChessState (Distribution r) Move
 	movePieceRandomly p d = do
 		Just current <- gets (lookup p)					-- get location of piece p
-		cstate <- get
-		let moves = possibleNexts p cstate
+		cstate <- get									-- extract the current state
+		let moves = possibleNexts p cstate				-- enumerate all the possible valid moves that the piece can make
 		move <- lift . d cstate $ moves					-- from the list of valid moves, choose one randomly according to distribution d
 		modify (applyMove move)							-- modify the state of the chessboard using the move
 		return move										-- return the move that was made
-			where
-				addmove (x, y) (dx, dy) = (x + dx, y + dy)
-				withinboard (x, y) = (0 < x) && (x < 9) && (0 < y) && (y < 9)
-				onlyFilledPositions = map snd . filter ((== (getColor p)) . getColor . fst)
 
 	possibleNexts :: Piece -> ChessState -> [Move]
 	possibleNexts p cstate = do
 		let Just current = lookup p cstate
 		let filledPositions = onlyFilledPositions cstate
+		let traceHere = trace (map snd cstate) current		-- partially apply the trace function so it starts from the current position and knows filled positions
 		possibility <- case getType p of
 			King -> do										-- if p is a King:
 				dx <- [-1, 0, 1]							--		x moves are between -1 and 1
@@ -90,7 +96,30 @@ module Chess where
 					(-1, -2), (-2, -1), (1, -2), (2, -1)]	--		define dz as all the possible moves a knight can make
 				let next = addmove current dz				--		define next
 				return next									--		return next
-		guard (possibility /= (0, 0))						-- not making a move is not a valid move
+			Rook -> do 										-- if p is a Rook:
+				left <- traceHere (-1, 0)					--		trace all possible rays going left, right, up and down that aren't blocked by another piece
+				right <- traceHere (1, 0)
+				up <- traceHere (0, 1)
+				down <- traceHere (0, -1)
+				[left, right, up, down]						--		return these rays
+			Bishop -> do 									-- if p is a Bishop:
+				upleft <- traceHere (-1, 1)					--		trace all diagonal rays
+				upright <- traceHere (1, 1)
+				downleft <- traceHere (-1, -1)
+				downright <- traceHere (1, -1)
+				[upleft, upright, downleft, downright]		--		return these rays
+			Queen -> do 									-- if p is a Queen:
+				left <- traceHere (-1, 0)					--		trace all horizontal, vertical, and diagonal rays
+				right <- traceHere (1, 0)
+				up <- traceHere (0, 1)
+				down <- traceHere (0, -1)
+				upleft <- traceHere (-1, 1)
+				upright <- traceHere (1, 1)
+				downleft <- traceHere (-1, -1)
+				downright <- traceHere (1, -1)
+				[upleft, upright, downleft, downright,
+					left, right, up, down]					--		return these rays
+		guard (possibility /= current)						-- not making a move is not a valid move
 		guard (withinboard possibility)						-- check if next is within the board
 		guard (not (elem possibility filledPositions))		-- check if next is already taken by a piece of the same color or not
 		return (Move p current possibility)					-- return this possible move
@@ -105,3 +134,8 @@ module Chess where
 					n <- possibleNexts (fst p') cstate
 					guard (spot == (getNewPosition n))
 					return n
+				trace filledPositions spot ray = do
+					let next = addmove spot ray
+					guard (withinboard next)
+					guard (not (elem next filledPositions))
+					next : (trace filledPositions next ray)
