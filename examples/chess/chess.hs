@@ -1,5 +1,6 @@
 module Chess where
 	import Probabilities
+	import Probabilities.Markov
 	import System.Random
 	import Control.Monad
 	import Control.Monad.Trans
@@ -32,11 +33,9 @@ module Chess where
 		Eat { eatenBy :: Piece, eaten :: Piece, eatenByPosition :: (Int, Int), eatenPosition :: (Int, Int) }
 		deriving (Eq, Show)
 
-	updateBoard :: Monad m => ChessUpdate -> StateT ChessState m ()
-	updateBoard (Eat p p' before after) = do
-		modify (filter ((/= p') . fst))
-		updateBoard (Move p before after)
-	updateBoard (Move p before after) = modify (map (\(k, v) -> if k == p then (pieceMoved k, after) else (k, v)))
+	updateBoard :: ChessUpdate -> ChessState -> ChessState
+	updateBoard (Eat p p' before after) = updateBoard (Move p before after) . filter ((/= p') . fst)
+	updateBoard (Move p before after) = map (\(k, v) -> if k == p then (pieceMoved k, after) else (k, v))
 		where
 			pieceMoved (Piece ptype color number True) = Piece ptype color number False
 			pieceMoved p = p
@@ -108,18 +107,16 @@ module Chess where
 		Some example distributions using the Probabilities library
 	--}
 
-	randomChessWalk :: RandomGen r => Piece -> Int -> StateT ChessState (Distribution r) (Int, Int)
-	randomChessWalk p 0 = do
-		Just position <- gets (lookup p)
-		return position
-	randomChessWalk p n = do
-		cstate <- get
-		let moves = possibleMoves p cstate
-		case moves of
-			[] -> do
-				Just position <- gets (lookup p)
-				return position
-			_ -> do
-				move <- lift . uniformSpace $ moves
-				updateBoard move
-				randomChessWalk p (n - 1)
+	markovChess :: RandomGen r => Piece -> ChessState -> Markov r ChessState
+	markovChess p startState = fromTransitionFunction startState transitionFunction
+		where
+			transitionFunction cstate = do
+				move <- uniformSpace $ possibleMoves p cstate
+				return (updateBoard move cstate)
+
+	runMarkovChessWalk :: RandomGen r => Int -> Piece -> ChessState -> Distribution r (Int, Int)
+	runMarkovChessWalk n p startState = (flip evalStateT) (markovChess p startState) $ do
+		replicateM_ n transitionState
+		gets (fromJust . lookup p . getCurrentState)
+			where
+				fromJust (Just x) = x

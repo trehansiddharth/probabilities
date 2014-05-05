@@ -13,11 +13,10 @@ module Main where
 
 	produceChessWalk :: IO ()
 	produceChessWalk = do
-		samples <- sampleIO 10000 $ runStateT
-			(randomChessWalk (Piece Bishop Black 0 True) 2)
+		samples <- sampleIO 10000 $ runMarkovChessWalk 2 (Piece Bishop Black 0 True)
 			[(Piece Bishop Black 0 True, (1, 1)),
 				(Piece Knight White 1 True, (5, 5))]
-		mainWith $ bubblePlot $ toSpread . map fst $ samples
+		mainWith $ bubblePlot $ toSpread samples
 
 	toSpread :: Fractional a => [(Int, Int)] -> [[a]]
 	toSpread samples = map (map (\x -> (fromIntegral x) / (fromIntegral . length $ samples))) . tally $ samples
