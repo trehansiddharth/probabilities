@@ -1,4 +1,5 @@
 module Chess where
+	import Prelude hiding (id, (.))
 	import Probabilities
 	import Probabilities.Markov
 	import System.Random
@@ -7,6 +8,7 @@ module Chess where
 	import Control.Monad.Trans.State.Lazy
 	import Data.List (lookup)
 	import Data.Tuple (swap)
+	import Control.Category
 
 	{--
 		Data types and functions that are used by chessboard distributions
@@ -55,7 +57,7 @@ module Chess where
 				dx <- [-1, 0, 1]
 				dy <- [-2, -1, 1, 2]
 				let next = addmove current (dx, dy)
-				guard ((dy > 0) <=> (getColor p == White))
+				guard ((dy > 0) <=> (getColor p == Black))
 				guard ((dx /= 0) ==> (pieceAt next == Just (oppositeOf (getColor p))))
 				guard ((abs dy == 2) ==> isFirstMove p)
 				return next
@@ -102,17 +104,31 @@ module Chess where
 				(==>) p q = not (p && (not q))
 				(<=>) p q = (p ==> q) && (q ==> p)
 
+	standardStartState :: ChessState
+	standardStartState = whitePieces ++ blackPieces
+		where
+			whitePawns = map (\i -> (Piece Pawn White i True, (i, 7))) [1 .. 8]
+			reflectx (p, (x, y)) = (p, (9 - x, y))
+			reflecty (p, (x, y)) = (p, (x, 9 - y))
+			increment (p, z) = (p { getNumber = 1 + getNumber p }, z)
+			oppose (p, z) = (p { getColor = oppositeOf (getColor p) }, z)
+			rook = (Piece Rook White 1 True, (1, 8))
+			knight = (Piece Knight White 1 True, (2, 8))
+			bishop = (Piece Bishop White 1 True, (3, 8))
+			queen = (Piece Queen White 1 True, (4, 8))
+			king = (Piece King White 1 True, (5, 8))
+			whitePieces = whitePawns ++ [rook, knight, bishop, queen, king] ++ (map (increment . reflectx) [rook, knight, bishop])
+			blackPieces = map (oppose . reflecty) whitePieces
 
 	{--
-		Some example distributions using the Probabilities library
+		Some example distributions using the Probabilities and Probabilities.Markov
+		modules.
 	--}
 
 	markovChess :: RandomGen r => Piece -> ChessState -> Markov r ChessState
-	markovChess p startState = fromTransitionFunction startState transitionFunction
-		where
-			transitionFunction cstate = do
-				move <- uniformSpace $ possibleMoves p cstate
-				return (updateBoard move cstate)
+	markovChess p startState = fromTransitionFunction startState $ \cstate -> do
+		move <- uniformSpace $ possibleMoves p cstate
+		return (updateBoard move cstate)
 
 	runMarkovChessWalk :: RandomGen r => Int -> Piece -> ChessState -> Distribution r (Int, Int)
 	runMarkovChessWalk n p startState = (flip evalStateT) (markovChess p startState) $ do
@@ -120,3 +136,19 @@ module Chess where
 		gets (fromJust . lookup p . getCurrentState)
 			where
 				fromJust (Just x) = x
+
+	data Lens a b = Lens (a -> b) (a -> b -> a)
+
+	onlyFst = Lens fst (\(x, y) x' -> (x', y))
+	onlySnd = Lens snd (\(x, y) y' -> (x, y'))
+
+	instance Category Lens where
+		id = Lens id const
+		(.) (Lens split1 merge1) (Lens split2 merge2) = Lens (split1 . split2) (\state part -> merge2 state (merge1 (split2 state) part))
+
+	with :: Monad m => Lens s s' -> StateT s' m a -> StateT s m a
+	with (Lens split merge) f = do
+		state <- get
+		result <- lift $ runStateT f (split state)
+		put (merge state (snd result))
+		return (fst result)
