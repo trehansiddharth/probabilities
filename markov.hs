@@ -5,16 +5,14 @@ module Probabilities.Markov where
 	import System.Random
 	import Control.Monad.Trans
 	import Control.Monad.Trans.State.Lazy
+	import Control.Monad.Identity
 
-	data (RandomGen r, Eq a) => Markov r a = State { getCurrentState :: a, transition :: Distribution r (Markov r a) }
-	
-	instance (RandomGen r, Eq a) => Eq (Markov r a) where
-		(==) x y = getCurrentState x == getCurrentState y
+	data (RandomGen r, Eq a, Monad m) => MarkovT r m a = Markov { getStateDistribution :: DistributionT r m a, transitionFunction :: a -> DistributionT r m a }
 
-	fromTransitionFunction :: (RandomGen r, Eq a) => a -> (a -> Distribution r a) -> Markov r a
-	fromTransitionFunction startState f = State startState $ do
-		s <- f startState
-		return $ fromTransitionFunction s f
+	type Markov r = MarkovT r Identity
 
-	transitionState :: (RandomGen r, Eq a) => StateT (Markov r a) (Distribution r) ()
+	transition :: (RandomGen r, Eq a, Monad m) => MarkovT r m a -> DistributionT r m (MarkovT r m a)
+	transition markov = return $ Markov (getStateDistribution markov >>= transitionFunction markov) (transitionFunction markov)
+
+	transitionState :: (RandomGen r, Eq a, Monad m) => StateT (MarkovT r m a) (DistributionT r m) ()
 	transitionState = get >>= lift . transition >>= put

@@ -22,7 +22,7 @@ module Chess where
 	oppositeOf White = Black
 
 	data PieceType = King | Queen | Knight | Bishop | Rook | Pawn
-		deriving (Eq, Show)
+		deriving (Eq, Show, Read)
 
 	data Piece = Piece { getType :: PieceType, getColor :: Color, getNumber :: Int, isFirstMove :: Bool }
 		deriving (Eq, Show)
@@ -35,12 +35,15 @@ module Chess where
 		Eat { eatenBy :: Piece, eaten :: Piece, eatenByPosition :: (Int, Int), eatenPosition :: (Int, Int) }
 		deriving (Eq, Show)
 
-	updateBoard :: ChessUpdate -> ChessState -> ChessState
-	updateBoard (Eat p p' before after) = updateBoard (Move p before after) . filter ((/= p') . fst)
-	updateBoard (Move p before after) = map (\(k, v) -> if k == p then (pieceMoved k, after) else (k, v))
+	applyUpdate :: ChessUpdate -> ChessState -> ChessState
+	applyUpdate (Eat p p' before after) = applyUpdate (Move p before after) . filter ((/= p') . fst)
+	applyUpdate (Move p before after) = map (\(k, v) -> if k == p then (pieceMoved k, after) else (k, v))
 		where
 			pieceMoved (Piece ptype color number True) = Piece ptype color number False
 			pieceMoved p = p
+
+	updateBoard :: Monad m => ChessUpdate -> StateT ChessState m ()
+	updateBoard = modify . applyUpdate
 
 	possibleMoves :: Piece -> ChessState -> [ChessUpdate]
 	possibleMoves p cstate = do
@@ -94,8 +97,10 @@ module Chess where
 					guard ((getColor . fst $ p') /= (getColor p))
 					guard ((getType . fst $ p') /= King)
 					n <- possibleMoves (fst p') cstate
-					guard (spot == (getNewPosition n))
+					guard (spot == (getUpdatedPosition n))
 					return n
+				getUpdatedPosition (Move _ _ after) = after
+				getUpdatedPosition (Eat _ _ _ after) = after
 				trace spot ray = do
 					let next = addmove spot ray
 					guard (withinboard next)
@@ -103,6 +108,25 @@ module Chess where
 				pieceAt location = fmap getColor (lookup location (map swap cstate))
 				(==>) p q = not (p && (not q))
 				(<=>) p q = (p ==> q) && (q ==> p)
+	
+	isInCheck mycolor cstate = [] /= do
+		p <- map fst cstate
+		guard (getColor p /= mycolor)
+		update <- possibleMoves p cstate
+		case update of
+			Eat _ p' _ _ -> guard (getType p' == King)
+			Move _ _ _ -> guard False
+		return update
+
+	isInCheckMate mycolor cstate = (isInCheck mycolor cstate) && permanentlyChecked
+		where
+			permanentlyChecked = [] == do
+				p <- map fst cstate
+				guard (getColor p == mycolor)
+				update <- possibleMoves p cstate
+				let cstate' = applyUpdate update cstate
+				guard (isInCheck mycolor cstate')
+				return update
 
 	standardStartState :: ChessState
 	standardStartState = whitePieces ++ blackPieces
@@ -126,14 +150,16 @@ module Chess where
 	--}
 
 	markovChess :: RandomGen r => Piece -> ChessState -> Markov r ChessState
-	markovChess p startState = fromTransitionFunction startState $ \cstate -> do
+	markovChess p startState = Markov (return startState) $ \cstate -> do
 		move <- uniformSpace $ possibleMoves p cstate
-		return (updateBoard move cstate)
+		return (applyUpdate move cstate)
 
 	runMarkovChessWalk :: RandomGen r => Int -> Piece -> ChessState -> Distribution r (Int, Int)
 	runMarkovChessWalk n p startState = (flip evalStateT) (markovChess p startState) $ do
 		replicateM_ n transitionState
-		gets (fromJust . lookup p . getCurrentState)
+		dState <- gets getStateDistribution
+		state <- lift dState
+		return $ fromJust . lookup p $ state
 			where
 				fromJust (Just x) = x
 
@@ -152,3 +178,72 @@ module Chess where
 		result <- lift $ runStateT f (split state)
 		put (merge state (snd result))
 		return (fst result)
+
+	interactiveChess :: RandomGen r => StateT ChessState (DistributionT r IO) ()
+	interactiveChess = forever $ do
+		moveAI <- makeMove
+		updateBoard moveAI
+		printBoard moveAI
+		moveHuman <- allowHumanMove
+		updateBoard moveHuman
+
+	makeMove :: RandomGen r => StateT ChessState (DistributionT r IO) ChessUpdate
+	makeMove = do
+		state <- get
+		let pieces = map fst state
+		piece <- if (isInCheck Black state)
+			then return $ head . filter (\p -> (getColor p == Black) && (getType p == King)) $ pieces
+			else lift $ (uniformSpace pieces) `given` (\p -> getColor p == Black && possibleMoves p state /= [])
+		move <- lift $ uniformSpace $ possibleMoves piece state
+		return move
+
+	allowHumanMove :: RandomGen r => StateT ChessState (DistributionT r IO) ChessUpdate
+	allowHumanMove = do
+		command <- readHumanMove
+		let from = read . takeWhile (/= ' ') $ command :: (Int, Int)
+		let to = read . tail . dropWhile (/= ' ') $ command :: (Int, Int)
+		maybe_p <- gets (lookup from . map swap)
+		case maybe_p of
+			Just p -> do
+				if (getColor p == White)
+					then do
+						state <- get
+						let moves = possibleMoves p state
+						case lookup to . map moveAfter $ moves of
+							Just move -> do
+								return move
+							Nothing -> do
+								lift . lift $ putStrLn "Not a valid move. Try again."
+								allowHumanMove
+					else do
+						lift . lift $ putStrLn "You are only allowed to move pieces of your color (White). Try again."
+						allowHumanMove
+			Nothing -> do
+				lift . lift $ putStrLn "No piece found at given location. Try again."
+				allowHumanMove
+			where
+				moveAfter (Move p before after) = (after, Move p before after)
+				moveAfter (Eat p p' before after) = (after, Eat p p' before after)
+
+	readHumanMove :: RandomGen r => StateT ChessState (DistributionT r IO) String
+	readHumanMove = lift . lift $ getLine
+
+	printBoard :: RandomGen r => ChessUpdate -> StateT ChessState (DistributionT r IO) ()
+	printBoard move = do
+		forM_ [1 .. 8] $ \y -> do
+			forM_ [1 .. 8] $ \x -> do
+				maybe_p <- gets (lookup (x, y) . map swap)
+				case maybe_p of
+					Nothing -> lift . lift . putStr $ "   "
+					Just p -> do
+						let c = case getColor p of
+							White -> "w"
+							Black -> "b"
+						lift . lift . putStr $ " " ++ c ++ case getType p of
+							Pawn -> "p"
+							Rook -> "r"
+							Knight -> "n"
+							Bishop -> "b"
+							Queen -> "Q"
+							King -> "K"
+			lift . lift . putStrLn $ ""

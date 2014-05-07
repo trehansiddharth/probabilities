@@ -135,11 +135,17 @@ module Probabilities where
 	givenJoint :: (RandomGen r, Monad m) => DistributionT r m (a, b) -> (b -> Bool) -> DistributionT r m a
 	givenJoint d p = given d (\(x, y) -> p y) >>= return . fst
 
-	condition :: (RandomGen r, Monad m) => DistributionT r m (b -> a) -> DistributionT r m b -> DistributionT r m (a, b)
-	condition dab db = do
-		ab <- dab
+	($~) :: (RandomGen r, Monad m) => (b -> DistributionT r m a) -> DistributionT r m b -> DistributionT r m (a, b)
+	($~) f db = do
 		b <- db
-		return $ (ab b, b)
+		a <- f b
+		return $ (a, b)
+
+	observing :: (RandomGen r, Monad m) => DistributionT r m (a, b) -> (a -> Bool) -> DistributionT r m b
+	observing dab p = fmap snd $ dab `given` (p . fst)
+
+	bayesianUpdate :: (RandomGen r, Eq o, Monad m) => (s -> DistributionT r m o) -> DistributionT r m s -> o -> DistributionT r m s
+	bayesianUpdate f ds o = (f $~ ds) `observing` (== o)
 
 	marginalA :: (RandomGen r, Monad m) => DistributionT r m (a, b) -> DistributionT r m a
 	marginalA = fmap fst
@@ -174,4 +180,4 @@ module Probabilities where
 	varianceInt n d = do
 		e2 <- estimate n ((^2) . fromIntegral) d
 		e <- estimate n fromIntegral d
-		return $ e2 - (e^2)--}
+		return $ e2 - (e^2)
