@@ -7,26 +7,35 @@ module Probabilities.Markov where
 	import Control.Monad.Trans.State.Lazy
 	import Control.Monad.Identity
 
-	data (RandomGen r, Eq a, Monad m) => MarkovT r m a = Markov { getStateDistribution :: DistributionT r m a, transitionFunction :: a -> DistributionT r m a }
+	data (RandomGen r, Eq a, Monad m) => MarkovState r m a = Uncertain { getUncertainState :: DistributionT r m a } | Certain { getCertainState :: a }
+
+	data (RandomGen r, Eq a, Monad m) => MarkovT r m a = Markov { getState :: MarkovState r m a, transitionFunction :: a -> DistributionT r m a }
 
 	type Markov r = MarkovT r Identity
 
-	transition :: (RandomGen r, Eq a, Monad m) => MarkovT r m a -> DistributionT r m (MarkovT r m a)
-	transition markov = return $ Markov (getStateDistribution markov >>= transitionFunction markov) (transitionFunction markov)
+	transition :: (RandomGen r, Eq a, Monad m) => MarkovT r m a -> (MarkovT r m a)
+	transition (Markov state f) = case state of
+		Uncertain d -> Markov (Uncertain (d >>= f)) f
+		Certain s -> Markov (Uncertain (f s)) f
 
 	transitionState :: (RandomGen r, Eq a, Monad m) => StateT (MarkovT r m a) (DistributionT r m) ()
-	transitionState = get >>= lift . transition >>= put
+	transitionState = modify transition
 
-	collapse :: (RandomGen r, Eq a, Monad m) => MarkovT r m a -> MarkovT r m a
-	collapse markov = Markov state (transitionFunction markov)
-		where
-			state = do
-				s <- getStateDistribution markov
-				return s
+	drawState :: (RandomGen r, Eq a, Monad m) => MarkovT r m a -> DistributionT r m a
+	drawState (Markov state f) = case state of
+		Uncertain d -> d
+		Certain s -> return s
+
+	collapse :: (RandomGen r, Eq a, Monad m) => MarkovT r m a -> DistributionT r m (MarkovT r m a)
+	collapse (Markov state f) = case state of
+		Uncertain d -> do
+			s <- d
+			return (Markov (Certain s) f)
+		Certain s -> return (Markov state f)
 
 	collapseState :: (RandomGen r, Eq a, Monad m) => StateT (MarkovT r m a) (DistributionT r m) a
 	collapseState = do
 		markov <- get
-		let markov' = collapse markov
+		markov' <- lift . collapse $ markov
 		put markov'
-		lift . getStateDistribution $ markov'
+		lift . drawState $ markov

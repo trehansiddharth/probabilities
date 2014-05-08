@@ -36,8 +36,8 @@ module WhatWouldISay where
 	runWhatWouldISay :: String -> IO ()
 	runWhatWouldISay corpus = do
 		g <- newStdGen
-		let input = concat . map words . lines $ corpus
-		runDistT (runStateT whatWouldISay input) g
+		let text = concat . map words . lines $ corpus
+		runDistT (runStateT whatWouldISay text) g
 		return ()
 
 	whatWouldISay :: RandomGen r => StateT [String] (DistributionT r IO) ()
@@ -45,7 +45,7 @@ module WhatWouldISay where
 		dBigrams <- with (newSnd newDistBuilder) buildBigrams
 		let transitionModel = \s -> dBigrams `givenA` (== s)
 		(startState, _) <- lift dBigrams
-		let markovModel = Markov (return startState) transitionModel
+		let markovModel = Markov (Certain startState) transitionModel
 		with (newState markovModel) say
 
 	buildBigrams :: RandomGen r => StateT ([String], DistBuilder (String, String)) (DistributionT r IO) (DistributionT r IO (String, String))
@@ -64,4 +64,6 @@ module WhatWouldISay where
 		word <- collapseState
 		lift . lift . putStr $ word ++ " "
 		transitionState
-		if elem '.' word then lift . lift . putStrLn $ "" else say
+		if hasPunctuation word then lift . lift . putStrLn $ "" else say
+			where
+				hasPunctuation word = elem '.' word || elem '!' word || elem '?' word
