@@ -16,3 +16,17 @@ module Probabilities.Markov where
 
 	transitionState :: (RandomGen r, Eq a, Monad m) => StateT (MarkovT r m a) (DistributionT r m) ()
 	transitionState = get >>= lift . transition >>= put
+
+	collapse :: (RandomGen r, Eq a, Monad m) => MarkovT r m a -> MarkovT r m a
+	collapse markov = Markov state (transitionFunction markov)
+		where
+			state = do
+				s <- getStateDistribution markov
+				return s
+
+	collapseState :: (RandomGen r, Eq a, Monad m) => StateT (MarkovT r m a) (DistributionT r m) a
+	collapseState = do
+		markov <- get
+		let markov' = collapse markov
+		put markov'
+		lift . getStateDistribution $ markov'

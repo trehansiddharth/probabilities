@@ -130,22 +130,22 @@ module Probabilities where
 	given :: (RandomGen r, Monad m) => DistributionT r m a -> (a -> Bool) -> DistributionT r m a
 	given d p = do
 		x <- d
-		if (p x) then (return x) else (given d p)
+		if (p x) then (return x) else (d `given` p)
 
-	givenJoint :: (RandomGen r, Monad m) => DistributionT r m (a, b) -> (b -> Bool) -> DistributionT r m a
-	givenJoint d p = given d (\(x, y) -> p y) >>= return . fst
+	givenA :: (RandomGen r, Monad m) => DistributionT r m (a, b) -> (a -> Bool) -> DistributionT r m b
+	givenA d p = marginalB (d `given` (p . fst))
 
-	($~) :: (RandomGen r, Monad m) => (b -> DistributionT r m a) -> DistributionT r m b -> DistributionT r m (a, b)
-	($~) f db = do
+	givenB :: (RandomGen r, Monad m) => DistributionT r m (a, b) -> (b -> Bool) -> DistributionT r m a
+	givenB d p = marginalA (d `given` (p . snd))
+
+	(>>~) :: (RandomGen r, Monad m) => DistributionT r m b -> (b -> DistributionT r m a) -> DistributionT r m (a, b)
+	(>>~) db f = do
 		b <- db
 		a <- f b
 		return $ (a, b)
 
-	observing :: (RandomGen r, Monad m) => DistributionT r m (a, b) -> (a -> Bool) -> DistributionT r m b
-	observing dab p = fmap snd $ dab `given` (p . fst)
-
-	bayesianUpdate :: (RandomGen r, Eq o, Monad m) => (s -> DistributionT r m o) -> DistributionT r m s -> o -> DistributionT r m s
-	bayesianUpdate f ds o = (f $~ ds) `observing` (== o)
+	bayesianUpdate :: (RandomGen r, Eq o, Monad m) => DistributionT r m s -> (s -> DistributionT r m o) -> o -> DistributionT r m s
+	bayesianUpdate ds f o = (ds >>~ f) `givenA` (== o)
 
 	marginalA :: (RandomGen r, Monad m) => DistributionT r m (a, b) -> DistributionT r m a
 	marginalA = fmap fst
@@ -161,7 +161,7 @@ module Probabilities where
 		let e' = ((f x) + (fromIntegral $ n - 1) * e) / (fromIntegral n)
 		return e'
 
-	probability :: (a -> Bool) -> (a -> Float) -- allows you to do nice things like: estimate 1000 (probability even $ binomial 10 0.4
+	probability :: (a -> Bool) -> (a -> Float) -- allows you to do nice things like: estimate 1000 (probability even) $ binomial 10 0.4
 	probability p = \x -> if p x then 1.0 else 0.0
 
 	mean :: (RandomGen r, Fractional a, Monad m) => Int -> DistributionT r m a -> DistributionT r m a
