@@ -1,58 +1,244 @@
-Know I’ve done wrong,
-Left your heart torn
-Is that what devils do?
-Took you so low,
-Where only fools go
-I shook the angel in you
+TOSS-UP
+1) Physics Multiple Choice In a graph of stopping voltage versus frequency, what is the slope of the straight line that would result?
+	W) h
+	X) e
+	Y) e/h
+	Z) h/e
+ANSWER: Z
 
-Now I’m rising from the ground
-Rising up to you
-Filled with all the strength I found
-There's nothing I can’t do!
+BONUS
+1) Physics Short Answer By name or number, indicate all of the following three observations that hold true for the photoelectric effect.
+The intensity of the incident light directly correlates with the energy of the emitted electrons.
+There exists a certain minimum frequency below which no electrons are emitted.
+Electrons are emitted with no time delay.
+ANSWER: 2 and 3
 
-[Chorus:]
-I need to know now, know now
-Can you love me again?
-I need to know now, know now
-Can you love me again?
-I need to know now, know now
-Can you love me again?
-I need to know now, know now
-Can you love me again?
+TOSS-UP
+2) Biology Short Answer What is the name for the process wherein a brief electrical pulse is applied to a solution containing cells to create temporary holes in their plasma membranes through which DNA can enter?
 
-Can you love me again?
+ANSWER: ELECTROPORATION
 
-It’s unforgivable,
-I stole and burnt your soul
-Is that what demons do?
-They rule the worst of me
-Destroy everything,
-They bring down angels like you
+BONUS
+2) Biology Multiple Choice In a fluorescence-activated cell sorter, by what physical characteristic are cells separated in order to detect cells with a desirable trait?
+	W) A charge imposed by a laser aimed at the cells
+	X) A different pH level within the desirable cells
+	Y) A different color, detected through a microscope, in the cells
+	Z) A difference in mass detected through automatic ultracentrifugation
+ANSWER: W
 
-Now I’m rising from the ground
-Rising up to you
-Filled with all the strength I've found
-There's nothing I can’t do!
+TOSS-UP
+3) Earth and Space Science Multiple Choice Due to plate tectonics, the Earth will look very different in 50 million years. Which of the following is not predicted to happen?
+	W) Africa will collide with Eurasia, creating the Mediterranean Moutains.
+	X) Antarctica will migrate northward.
+	Y) India will separate from Asia, moving east. 
+	Z) South America and North America will remain connected, as they both move north.
+ANSWER: Y
 
-[Chorus:]
-I need to know now, know now
-Can you love me again?
-I need to know now, know now
-Can you love me again?
+BONUS
+3) Earth and Space Science Multiple Choice Which of the following statements is not true regarding chrons in geology?
+	W) The Gilbert and Matuyama chrons were normal, while the Gauss chron was reversed.
+	X) We are currently in the Brunhes chron.
+	Y) We are currently in a normal chron.
+	Z) The Gilbert chron preceded the Gauss chron, both occurring over 2 million years ago.
+ANSWER: W
 
-Can you love me again?
+TOSS-UP
+4) Chemistry Multiple Choice For which of the following compounds does the cation have the same electron configuration as xenon and the anion has the same configuration as argon?
+	W) SrF2
+	X) Ca3N2
+	Y) Cs2S
+	Z) AlBr3
+ANSWER: Y
 
-I told you once I can't do this again, do this again, oh, no
-I told you once I can't do this again, do this again, oh, no
+BONUS
+4) Chemistry Short Answer Order the following four ions in order of decreasing size.
+	1: Ba 2+
+	2: I -
+	3: La 3+
+	4: Te 2-
+ANSWER: 4, 2, 1, 3
 
-[Chorus:]
-I need to know now, know now
-Can you love me again?
-I need to know now, know now
-Can you love me again?
-I need to know now, know now
-Can you love me again?
-I need to know now, know now
-Oh, oh (can you love me again?)
-Can you love me again?
-Can you love me again?
+TOSS-UP
+7) Physics Multiple Choice A block of mass 2.0 kg and an initial speed of 5.4 meters per second slides on a rough horizontal surface and is eventually brought to rest after traveling a distance of 4.0 meters. What is the frictional force between the block and the surface?
+	W) 29.2 N
+	X) 14.6 N
+	Y) 7.3 N
+	Z) 3.6 N
+ANSWER: Y
+
+BONUS
+7) Physics Short Answer A 25.0 kg block is very slowly raised up a vertical distance of 10.0 meters by a rope attached to an electric motor in a time of 8.0 seconds. Assuming g to equal -10 meters per second squared, calculate the power developed in the motor, expressing your answer to two significant figures and in Watts.
+
+ANSWER: 310
+
+TOSS-UP
+8) Biology Short Answer By name or number, indicate all of the following three parts of a nephron which would actively transport sodium chloride out of the filtrate.
+	1: Proximal convoluted tubule
+	2: Loop of Henle
+	3: Distal convoluted tubule
+ANSWER: 1, 2, 3 (all)
+
+BONUS
+8) Biology Multiple Choice Blood in the glomerulus is filtered primarily by a three-layered filtration barrier. Which of these is not part of that filtration barrier?
+	W) The single-celled capillary endothelium surrounding Bowman's space
+	X) Mesangial cells surrounding the glomerular capillary loops that filter using motilin
+	Y) The single-celled epithelial lining of Bowman's capsule, composed of podocytes
+	Z) A noncellular proteinaceous layer called the basement membrane
+ANSWER: X
+
+TOSS-UP
+9) Earth and Space Science Multiple Choice The distance to the nearest star, Proxima Centauri, is approximately 4 lightyears. What can be said about the distance to the fifth nearest star, Sirius?
+	W) It is about twice as far away as the nearest star.
+	X) It is about four times as far away as the nearest star.
+	Y) It is about fifteen times as far away as the nearest star.
+	Z) It is about one hundred times as far away as the nearest star.
+ANSWER: W
+
+BONUS
+9) Earth and Space Science Multiple Choice A particular star has a luminosity about 100 times that of the sun, and its apparent brightness is measured to be 4.3 x 10^-9 Watts per square meter. Given that the sun's luminosity is approximately 3.9 x 10^26 Watts, which of the following is closest to the distance of that star?
+	W) 30 lightyears
+	X) 90 lightyears
+	Y) 300 lightyears
+	Z) 900 lightyears
+ANSWER: X
+
+TOSS-UP
+10) Chemistry Multiple Choice Which of the following ionic solids would have the lowest K sub sp value?
+	W) HgS
+	X) MnS
+	Y) Ba(OH)2
+	Z) BaF2
+ANSWER: W
+
+BONUS
+10) Chemistry Short Answer By name or number, indicate all of the following statements that is or are true regarding solubility.
+	1: The solubility product is an equilibrium constant.
+	2: The solubility product varies according to the concentration of a common ion in solution.
+	3: Solubility is an equilibrium position.
+	4: Solubility has only one value for a particular solid at a given temperature.
+ANSWER: 1, 3
+
+TOSS-UP
+13) Physics Short Answer A particular process increases the intensity of a sound from 10^-10 Watts per meter squared to 10^-8 Watts per meter squared. By how many decibels does the sound intensity level change during this process?
+
+ANSWER: 20 
+
+BONUS
+13) Physics Short Answer The time interval between the ticks of a clock carried on a fast rocket is half of what observers on earth record. How fast is the rocket moving with respect to earth, in terms of c? Leave your answer in simplest radical form.
+
+ANSWER: sqrt(3)/2
+
+TOSS-UP
+14) Biology Multiple Choice Which of the following plants is not carnivorous?
+	W) Venus flytrap
+	X) Pitcher plant
+	Y) Sundew
+	Z) Indian pipe
+ANSWER: Z
+
+BONUS
+14) Biology Short Answer The evolution of Venus flytrap has been proposed as a series of four steps. Order the following four steps in the evoultion of these carnivorous plants from earliest chronologically to the latest.
+	1: Plants' leaves widened and developed longitudinal movement.
+	2: Trigger hairs specialized in differentiating between living insects and detritus develop.
+	3: Shorter response times were evolutionarily selected for.
+	4: A sticky gland develops on the surface of plants' leaves.
+ANSWER: 4, 1, 3, 2
+
+TOSS-UP
+15) Earth and Space Science Multiple Choice Which of the following rocks is not plutonic?
+	W) Diorite 
+	X) Kimberlite
+	Y) Pyroxenite
+	Z) Monzonite
+ANSWER: X
+
+BONUS
+15) Earth and Space Science Short Answer By name or number, indicate all of the following four descriptors which correctly characterize the petrology of pegmatite.
+	1: Extrusive
+	2: Igneous
+	3: Aphanitic
+	4: Holocrystalline
+ANSWER: 2, 4
+
+TOSS-UP
+16) Chemistry Multiple Choice How many unpaired electrons are in the complex ion Ni(H2O)6 2+?
+	W) 0
+	X) 1
+	Y) 2
+	Z) 4
+ANSWER: Y
+
+BONUS
+16) Chemistry Short Answer For each of the following two compounds, give the electron configuration for the transition metal ion in each of the following compounds.
+	1: K3[Fe(CN)6]
+	2: [Ni(H2O)6]Br2
+ANSWER: 1: [Ar]3d5, 2: [Ar]3d8
+
+TOSS-UP
+18) Energy Short Answer What is the name for the commercially worthless material that surrounds a wanted material in an ore deposit, an example of which is quartz in cassiterite?
+
+ANSWER: GANGUE
+
+BONUS
+18) Energy Short Answer In this process, crushed ore is fed into a tank containing a water-oil detergent mixture. What is the name of this process through which desirable pieces of ore can be skimmed off a mixture?
+
+ANSWER: FLOTATION PROCESS
+
+
+TOSS-UP
+19) Physics Multiple Choice Communicating by the transmission of digital signals has a very large number of advantages over communication by the transmission of analogue signals. Which of the following is not an advantage of digital communications?
+	W) Error-correcting codes are less complicated for digital transmission.
+	X) Digital signals can be encrypted to provide privacy and security.
+	Y) Digital circuits are relatively inexpensive and readily available.
+	Z) Time division multiplexing can be used with digital signals.
+ANSWER: W
+
+BONUS
+19) Physics Multiple Choice A signal of power 12 mW is input into a cable of specific attenuation 4.0 dB per kilometer. Which of the following is the power of the signal after it has traveled 6.0 km in the cable?
+	W) 5.00 mW
+	X) 2.50 mW
+	Y) 0.50 mW
+	Z) 0.05 mW
+ANSWER: Z (loss = 10log(out/in))
+
+TOSS-UP
+20) Biology Short Answer In the process called glycogenolysis, which is catalyzed by glycogen phosphorylase, glycogen composed of n residues is combined with inorganic phosphate to yield glycogen with n-1 residues and what other product?
+
+ANSWER: GLUCOSE-1-PHOSPHATE
+
+BONUS
+20) Biology Short Answer For each of the following four biological molecules, state whether it would more likely originate from glycolysis or the citric acid cycle.
+	1: Cholesterol
+	2: Glutamate
+	3: Alanine
+	4: Chlorophyll
+ANSWER: 1: citric acid cycle, 2: citric acid cycle, 3: glycolysis, 4: citric acid cycle
+
+TOSS-UP
+21) Earth and Space Science Multiple Choice Which of the following is the best explanation for why green stars have not been observed?
+	W) To radiate in the green part of the spectrum would necessitate temperatures higher than the Planck temperature, which would destabilize the star.
+	X) A peak brightness in the green region of a spectrum will emit in red and blue as well, stimulating all three photoreceptors in the human eye.
+	Y) The apparent color of stars in the sky is due to redshift and blueshift, therefore making greenshift an impossibility.
+	Z) Green stars are theorized to exist, but are extremely rare and therefore have not yet been observed.
+ANSWER: X
+
+BONUS
+21) Earth and Space Science Short Answer Thorne-Zytkow objects are hypothetical stars wherein a red giant or supergiant contains a neutron star at its core. By name or number, indicate all of the following four statements that would be true about such a star.
+If the object's mass exceeds the Tolman-Oppenheimer-Volkoff limit, it will explode in a supernova that leaves a white dwarf.
+A Thorne-Zytkow object may resemble a red giant or a Wolf-Rayet star observationally.
+The surface of such an object would exceed 10^15 Kelvin.
+Such an object would generate most of its heat through nuclear fusion and compression of accreting gas.
+ANSWER: 2, 4
+
+TOSS-UP
+22) Chemistry Short Answer In the reaction between ethylene and bromine to form 1,2-dibromoethane, ethylene and bromine initially form an ion intermediate and a bromide ion. The bromine ion then undergoes nucleophilic attack on the ion intermediate to form 1, 2-dibromoethane. What is the name of the ion intermediate formed by the initial reaction?
+
+ANSWER: (ETHYLENE)BROMONIUM ION
+
+BONUS
+22) Chemistry Short Answer Rank the following four alkenes in order from least relative rate of reaction with bromine to highest.
+	1: Propene
+	2: 2-methylpropene
+	3: Ethylene
+	4: 2, 3-dimethyl-2-butene
+ANSWER: 3, 1, 2, 4

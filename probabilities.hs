@@ -42,6 +42,42 @@ module Probabilities where
 	instance RandomGen r => MonadTrans (DistributionT r) where
 		lift u = Distribution $ \r -> u
 
+	data BST a = Branch { totalProbability :: Float, leftBST :: BST a, rightBST :: BST a } | Leaf { leafProbability :: Float, leafValue :: a }
+
+	probabilityBST :: BST a -> Float
+	probabilityBST (Leaf p x) = p
+	probabilityBST (Branch p x y) = p
+
+	insertBST :: (RandomGen r, Monad m) => Float -> a -> BST a -> DistributionT r m (BST a)
+	insertBST px x (Leaf py y) = return $ Branch (px + py) (Leaf px x) (Leaf py y)
+	insertBST px x (Branch p y z) = do
+		goleft <- bernoulli True False 0.5
+		if goleft
+			then do
+				left <- insertBST px x y
+				return (Branch (p + px) left z)
+			else do
+				right <- insertBST px x z
+				return (Branch (p + px) y right)
+			where
+				py = probabilityBST y
+				pz = probabilityBST z
+
+	makeBST :: (RandomGen r, Monad m) => [(a, Float)] -> DistributionT r m (BST a)
+	makeBST ((a, p):dict) = go (Leaf p a) dict
+		where
+			go bst [] = return bst
+			go bst ((b, q):xs) = do
+				bst' <- insertBST q b bst
+				go bst' xs
+
+	searchBST :: Float -> BST a -> a
+	searchBST p (Leaf q x) = x
+	searchBST p (Branch q x y) = if (p < px) then (searchBST p x) else (searchBST (p - px) y)
+		where
+			px = probabilityBST x
+			py = probabilityBST y
+
 	fromICDF :: (RandomGen r, Monad m) => (Float -> a) -> DistributionT r m a
 	fromICDF f = uniform 0.0 1.0 >>= return . f
 
@@ -65,22 +101,20 @@ module Probabilities where
 	uniform a b = Distribution $ return . fst . randomR (a, b)
 
 	uniformSpace :: (RandomGen r, Eq a, Monad m) => [a] -> DistributionT r m a
-	uniformSpace space = choice (map (\x -> (x, p)) space)
-		where
-			p = 1 / (fromIntegral . length $ space)
+	uniformSpace space = do
+		n <- uniform 0 (length space - 1)
+		return (space !! n)
 
 	bernoulli :: (RandomGen r, Eq a, Monad m) => a -> a -> Float -> DistributionT r m a
-	bernoulli success failure p = fromPMF [success, failure] pmf
-		where
-			pmf x	| x == success	= p
-					| x == failure	= 1 - p
+	bernoulli success failure p = do
+		x <- uniform 0.0 1.0
+		return $ if x < p then success else failure
 
 	choice :: (RandomGen r, Eq a, Monad m) => [(a, Float)] -> DistributionT r m a
-	choice dict = fromPMF (map fst dict) (lookup dict)
-		where
-			lookup [] x = undefined
-			lookup ((k, v):ds) x	| k == x	= v
-									| otherwise	= lookup ds x
+	choice dict = do
+		bst <- makeBST dict
+		p <- uniform 0.0 1.0
+		return $ searchBST p bst
 
 	geometric :: (RandomGen r, Monad m) => Float -> DistributionT r m Int
 	geometric p = do
